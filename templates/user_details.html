@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-2 rounded shadow-sm">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/admin/users">Manage Users</a></li>
+        <li class="breadcrumb-item active" aria-current="page">User Details</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="p-4 rounded shadow-sm" style="background-color: #f0f4fc;">
+        <h1 class="text-center mb-4" style="color: #004a9f;">User Details</h1>
+
+        <!-- Personal Information -->
+        <div class="mb-4">
+            <h4>Personal Information</h4>
+            <p><strong>First Name:</strong> {{ user.first_name }}</p>
+            <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+            <p>
+                <strong>Email:</strong>
+                <a href="mailto:{{ user.email }}" style="color: #004a9f;">{{ user.email }}</a>
+            </p>
+            <p>
+                <strong>Phone Number:</strong>
+                {% if user.phone_number %}
+                <a href="tel:{{ user.phone_number }}" style="color: #004a9f;">
+                    {{ user.phone_number|format_phone }}
+                </a>
+                {% else %}
+                <span class="text-muted">Not provided</span>
+                {% endif %}
+            </p>
+            <p><strong>Role:</strong> {{ user.role.capitalize() }}</p>
+        </div>
+
+        <!-- Assigned Training Sessions -->
+        <div class="mb-4">
+            <h4>Assigned Training Sessions</h4>
+            {% if assigned_sessions %}
+            <table class="table table-striped">
+                <thead class="table-primary" style="color: #004a9f;">
+                <tr>
+                    <th>Team Member</th>
+                    <th>Position</th>
+                    <th>Date</th>
+                    <th>Timeframe</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for session in assigned_sessions %}
+                <tr>
+                    <td>{{ session.team_member.name }}</td>
+                    <td>{{ session.position.name }}</td>
+                    <td>{{ session.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ session.timeframe }}</td>
+                    <td>
+                        <form method="POST" action="/admin/unassign-session/{{ session.id }}" onsubmit="return confirm('Are you sure you want to unassign this session?');" style="display:inline-block;">
+                            <button type="submit" class="btn btn-danger btn-sm">Unassign</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No training sessions assigned to this user.</p>
+            {% endif %}
+        </div>
+
+        <!-- Edit User Details Button -->
+        <div class="text-center mb-4">
+            <button id="toggleEditForm" class="btn btn-outline-primary">
+                <i class="fas fa-pencil-alt"></i> Edit User Details
+            </button>
+        </div>
+
+        <!-- Edit User Details Form -->
+        <div id="editUserForm" class="mb-4" style="display: none;">
+            <h4>Edit User Details</h4>
+            <form method="POST" action="/admin/edit-user/{{ user.id }}">
+                <div class="form-group mb-3">
+                    <label for="first_name" class="form-label" style="color: #004a9f;">First Name</label>
+                    <input type="text" id="first_name" name="first_name" class="form-control" value="{{ user.first_name }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="last_name" class="form-label" style="color: #004a9f;">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" class="form-control" value="{{ user.last_name }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="email" class="form-label" style="color: #004a9f;">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="phone_number" class="form-label" style="color: #004a9f;">Phone Number</label>
+                    <input type="text" id="phone_number" name="phone_number" class="form-control" value="{{ user.phone_number or '' }}">
+                </div>
+                <div class="form-group mb-3">
+                    <label for="role" class="form-label" style="color: #004a9f;">Role</label>
+                    <select id="role" name="role" class="form-control" required>
+                        <option value="trainer" {% if user.role == 'trainer' %}selected{% endif %}>Trainer</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" style="background-color: #004a9f;">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-center">
+            <form method="POST" action="/admin/delete-user/{{ user.id }}" onsubmit="return confirm('Are you sure you want to delete {{ user.first_name }} {{ user.last_name }}?');" style="display:inline-block;">
+                <button type="submit" class="btn btn-danger me-2">Delete User</button>
+            </form>
+            <a href="/admin/users" class="btn btn-secondary">Back to Users</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('toggleEditForm').addEventListener('click', function () {
+        const form = document.getElementById('editUserForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

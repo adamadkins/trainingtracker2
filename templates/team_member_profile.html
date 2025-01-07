@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-2 rounded shadow-sm">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/team-members">Team Members</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ team_member.name }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="p-4 rounded shadow-sm" style="background-color: #f0f4fc;">
+        <h1 class="text-center mb-4" style="color: #004a9f;">Team Member Profile</h1>
+
+        <!-- Team Member Details -->
+        <div class="mb-4">
+            <h4>Details</h4>
+            <p><strong>Name:</strong> {{ team_member.name }}</p>
+            <p><strong>Start Date:</strong> {{ team_member.start_date.strftime('%B %d, %Y') }}</p>
+            <p><strong>Total Trainings:</strong> {{ training_sessions|length }}</p>
+        </div>
+
+        <!-- Training Count by Position -->
+        <div class="mb-4">
+            <h4>Training Summary by Position</h4>
+            {% if position_counts %}
+            <ul class="list-group">
+                {% for position, count in position_counts.items() %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ position }}
+                    <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">No trainings recorded for this team member.</p>
+            {% endif %}
+        </div>
+
+        <!-- Training History -->
+        <div class="mt-4">
+            <h4>Training History</h4>
+            {% if training_sessions %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Trainer</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in training_sessions %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('view_session_details', session_id=session.id) }}" style="color: #004a9f; text-decoration: none;">
+                                    {{ session.position.name }}
+                                </a>
+                            </td>
+                            <td>{{ session.trainer.first_name }} {{ session.trainer.last_name }}</td>
+                            <td>{{ session.timestamp.strftime('%B %d, %Y') }}</td>
+                            <td>{{ session.timestamp.strftime('%I:%M %p') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No training sessions logged for this team member.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        table th,
+        table td {
+            font-size: 12px;
+            padding: 5px;
+        }
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .list-group-item {
+        font-size: 14px;
+    }
+
+    .badge {
+        font-size: 12px;
+    }
+</style>
+{% endblock %}

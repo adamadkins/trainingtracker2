@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-2 rounded shadow-sm">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Admin Dashboard</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="p-4 rounded shadow-sm" style="background-color: #f0f4fc;">
+        <h1 class="text-center mb-4" style="color: #004a9f;">Admin Dashboard</h1>
+        <p class="text-center text-muted">Welcome, <strong>{{ current_user.first_name }}</strong>!</p>
+    </div>
+
+    <!-- Overview Section -->
+    <div class="p-4 rounded shadow-sm mt-4" style="background-color: #e6effc;">
+        <h2 class="text-center" style="color: #004a9f;">Overview</h2>
+        <div class="row g-4 mt-3">
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #004a9f;">Team Members</h5>
+                        <p class="card-text display-6 text-dark">{{ team_members_count }}</p>
+                        <a href="/team-members" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">Manage Team Members</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #004a9f;">Positions</h5>
+                        <p class="card-text display-6 text-dark">{{ positions_count }}</p>
+                        <a href="/admin/positions" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">Manage Positions</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #004a9f;">Users</h5>
+                        <p class="card-text display-6 text-dark">{{ users_count }}</p>
+                        <a href="/admin/users" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">Manage Users</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="p-4 rounded shadow-sm mt-4" style="background-color: #e6effc;">
+        <h2 class="text-center" style="color: #004a9f;">Actions</h2>
+        <div class="row g-4 mt-3">
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #004a9f;">View Reports</h5>
+                        <p class="card-text text-muted">Generate and view detailed training reports.</p>
+                        <a href="/admin/reports" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">View Reports</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #004a9f;">View Training Sessions</h5>
+                        <p class="card-text text-muted">View all logged training sessions in detail.</p>
+                        <a href="/sessions" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">View Sessions</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #004a9f;">Assign Trainers</h5>
+                        <p class="card-text text-muted">Schedule trainers for upcoming training sessions.</p>
+                        <a href="/admin/assign-trainer" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">Assign Trainers</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Section -->
+    <div class="p-4 rounded shadow-sm mt-4" style="background-color: #ffffff;">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- FullCalendar Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: window.innerWidth < 768 ? '' : 'dayGridMonth,timeGridDay',
+            },
+            events: '/admin/assignments-data',
+            eventContent: function (arg) {
+                // Render dots for month view
+                const viewType = arg.view.type;
+                if (viewType === 'dayGridMonth') {
+                    return { html: '<div class="fc-daygrid-event-dot"></div>' };
+                } else {
+                    return {
+                        html: `
+                            <div>
+                                <strong>${arg.event.extendedProps.team_member}</strong><br>
+                                Trainer: ${arg.event.extendedProps.trainer}<br>
+                                Position: ${arg.event.extendedProps.position}<br>
+                                Timeframe: ${arg.event.extendedProps.timeframe}
+                            </div>
+                        `
+                    };
+                }
+            },
+            dateClick: function (info) {
+                calendar.changeView('timeGridDay', info.dateStr); // Switch to day view on click
+            },
+            dayMaxEvents: true,
+            height: 'auto',
+        });
+        calendar.render();
+    });
+</script>
+
+<!-- Styling -->
+<style>
+    #calendar {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+        .fc-toolbar {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .fc-toolbar-chunk {
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Add a Comment</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Session Information</h2>
+            <p><strong>Team Member:</strong> {{ session.team_member.name }}</p>
+            <p><strong>Position:</strong> {{ session.position.name }}</p>
+            <p><strong>Trainer:</strong> {{ session.trainer.first_name }} {{ session.trainer.last_name }}</p>
+            <p><strong>Date:</strong> {{ session.timestamp.strftime('%m-%d-%Y %I:%M %p') }}</p>
+        </div>
+    </div>
+
+    <form method="POST" action="">
+        <div class="form-group">
+            <label for="content" class="form-label">Comment</label>
+            <textarea name="content" id="content" class="form-control" rows="4" placeholder="Add your comment here..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Add Comment</button>
+    </form>
+
+    <a href="/trainer-dashboard" class="btn btn-secondary mt-3">Skip</a>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Tracker Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0056b3; /* Blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .logo img {
+            width: 100%; /* Full width by default */
+            max-width: 250px; /* Limit logo size */
+            height: auto;
+            margin: 0 auto 20px auto; /* Center logo and add spacing below */
+        }
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 15px;
+                max-width: 90%; /* Smaller max width for mobile */
+            }
+            .logo img {
+                max-width: 200px; /* Adjust logo size for mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Logo Section -->
+        <div class="logo">
+            <img src="/static/images/full_logo.png" alt="Training Tracker Logo">
+        </div>
+
+        <!-- Login Form -->
+        <form method="POST" action="/login" class="mt-4">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">👁️</button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <!-- Forgot Password Link -->
+        <div class="text-center mt-3">
+            <a href="/forgot-password" class="text-decoration-none text-primary small">Forgot your password?</a>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passwordField = document.getElementById('password');
+            const type = passwordField.type === 'password' ? 'text' : 'password';
+            passwordField.type = type;
+        }
+    </script>
+</body>
+</html>

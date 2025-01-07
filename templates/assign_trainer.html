@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-2 rounded shadow-sm">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Assign Trainers</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="p-4 rounded shadow-sm" style="background-color: #f0f4fc;">
+        <h1 class="text-center mb-4" style="color: #004a9f;">Assign Trainers</h1>
+
+        <form method="POST" action="/admin/assign-trainer">
+            <div class="mb-3">
+                <label for="team_member_id" class="form-label">Select Team Member</label>
+                <select class="form-select" name="team_member_id" id="team_member_id" required>
+                    <option value="" disabled selected>Choose a team member</option>
+                    {% for member in team_members %}
+                    <option value="{{ member.id }}">{{ member.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="trainer_id" class="form-label">Select Trainer</label>
+                <select class="form-select" name="trainer_id" id="trainer_id" required>
+                    <option value="" disabled selected>Choose a trainer</option>
+                    {% for trainer in trainers %}
+                    <option value="{{ trainer.id }}">{{ trainer.first_name }} {{ trainer.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="position_id" class="form-label">Select Position</label>
+                <select class="form-select" name="position_id" id="position_id" required>
+                    <option value="" disabled selected>Choose a position</option>
+                    {% for position in positions %}
+                    <option value="{{ position.id }}">{{ position.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="date" class="form-label">Select Date</label>
+                <input type="date" class="form-control" name="date" id="date" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="timeframe" class="form-label">Select Timeframe</label>
+                <select class="form-select" name="timeframe" id="timeframe" required>
+                    <option value="" disabled selected>Choose a timeframe</option>
+                    <option value="breakfast">Breakfast (6:00 a.m. - 10:30 a.m.)</option>
+                    <option value="lunch">Lunch (11 a.m. - 2 p.m.)</option>
+                    <option value="thru-period">Thru Period (2 p.m. - 4 p.m.)</option>
+                    <option value="dinner">Dinner (4 p.m. - 7 p.m.)</option>
+                    <option value="close">Close (7 p.m. - 9 p.m.)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Assign Trainer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

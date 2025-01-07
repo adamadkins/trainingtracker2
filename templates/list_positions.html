@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-2 rounded shadow-sm">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Manage Positions</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="p-4 rounded shadow-sm" style="background-color: #f0f4fc;">
+        <h1 class="text-center mb-4" style="color: #004a9f;">Manage Positions</h1>
+
+        <!-- Positions Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th scope="col" style="color: #004a9f;">Position Name</th>
+                        <th scope="col" class="text-center" style="color: #004a9f;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position in positions %}
+                    <tr>
+                        <td>{{ position.name }}</td>
+                        <td class="text-center">
+                            <form method="POST" action="/admin/delete-position/{{ position.id }}" onsubmit="return confirm('Are you sure you want to delete this position?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add New Position Button -->
+        <div class="text-center mt-3">
+            <a href="/admin/add-position" class="btn btn-primary" style="background-color: #004a9f; border: none;">Add New Position</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-3 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/team-members">Team Members</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add Team Member</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Add Team Member Form -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h1 class="text-center mb-4">Add Team Member</h1>
+            <form method="POST" action="/admin/add-team-member">
+                <div class="form-group mb-3">
+                    <label for="name" class="form-label">Team Member Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Enter team member name" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="start_date" class="form-label">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-2">Add Team Member</button>
+                <a href="/team-members" class="btn btn-secondary w-100">Back to Team Members</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
