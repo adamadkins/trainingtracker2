@@ -1174,5 +1174,5 @@ def debug_time():
     return f"UTC: {utc_time}, EST: {est_time}"
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
