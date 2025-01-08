@@ -52,13 +52,14 @@ mail = Mail(app)
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    first_name = db.Column(db.String(50), nullable=False)  # First Name
-    last_name = db.Column(db.String(50), nullable=False)  # Last Name
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone_number = db.Column(db.String(15), nullable=True)
     password = db.Column(db.String(120), nullable=False)
-    role = db.Column(db.String(20), nullable=False)  # 'admin' or 'trainer'
+    role = db.Column(db.String(20), nullable=False)
     is_active = db.Column(db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)  # New field to mark deleted users
 
 
 class TrainingAssignment(db.Model):
@@ -283,7 +284,9 @@ def admin_dashboard():
 
     team_members_count = TeamMember.query.count()
     positions_count = Position.query.count()
-    users_count = User.query.count()
+
+    # Count users with is_deleted=False or include the logged-in user
+    users_count = User.query.filter((User.is_deleted == False) | (User.id == current_user.id)).count()
 
     return render_template(
         'admin_dashboard.html',
@@ -756,16 +759,17 @@ def invite_user():
         phone_number = request.form['phone_number']
         role = request.form['role']
 
-        # Generate invite token
-        token = serializer.dumps(email, salt='invite-token')
+        # Include the role in the invite token
+        token_data = {'email': email, 'role': role}
+        token = serializer.dumps(token_data, salt='invite-token')
         invite_link = url_for('register', token=token, _external=True)
 
-        # Send email invite
+        # Send email invite with correct role
         try:
             msg = Message(
-                subject='You Are Invited to Join as a Trainer',
+                subject=f"You Are Invited to Join as a {role.capitalize()}",
                 recipients=[email],
-                body=f"Hello,\n\nYou have been invited to join as a trainer. "
+                body=f"Hello,\n\nYou have been invited to join as a {role.capitalize()}. "
                      f"Please click the following link to complete your registration:\n\n{invite_link}\n\n"
                      f"If you did not expect this email, please ignore it.\n\n"
                      f"Best regards,\nYour Admin Team"
@@ -812,8 +816,10 @@ def edit_user(user_id):
 @app.route('/register/<token>', methods=['GET', 'POST'])
 def register(token):
     try:
-        email = serializer.loads(token, salt='invite-token', max_age=3600)
-    except:
+        token_data = serializer.loads(token, salt='invite-token', max_age=3600)
+        email = token_data['email']
+        role = token_data['role']  # Extract the role from the token
+    except Exception:
         flash('The invite link is invalid or has expired.', 'danger')
         return redirect(url_for('login'))
 
@@ -838,7 +844,7 @@ def register(token):
             username=username,
             email=email,
             password=hashed_password,
-            role='trainer',
+            role=role,  # Assign the role from the token
             is_active=True
         )
         db.session.add(new_user)
@@ -855,15 +861,24 @@ def register(token):
 def add_team_member():
     if current_user.role != 'admin':
         return "Unauthorized", 403
+
     if request.method == 'POST':
-        name = request.form['name']
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
         start_date_str = request.form['start_date']
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-        new_member = TeamMember(name=name, start_date=start_date)
+
+        # Combine first name and last name for compatibility with existing logic
+        full_name = f"{first_name} {last_name}"
+
+        # Create a new team member
+        new_member = TeamMember(name=full_name, start_date=start_date)
         db.session.add(new_member)
         db.session.commit()
+
         flash('Team member added successfully!', 'success')
         return redirect(url_for('list_team_members'))
+
     return render_template('add_team_member.html')
 
 
@@ -896,7 +911,9 @@ def list_positions():
 def list_users():
     if current_user.role != 'admin':
         return "Unauthorized", 403
-    users = User.query.all()  # Fetch all users from the database
+
+    # Exclude deleted users but ensure the logged-in user is visible
+    users = User.query.filter((User.is_deleted == False) | (User.id == current_user.id)).all()
     return render_template('list_users.html', users=users)
 
 
@@ -938,10 +955,14 @@ def delete_user(user_id):
         flash("You cannot delete your own account.", "danger")
         return redirect(url_for('list_users'))
 
-    db.session.delete(user)
-    db.session.commit()
+    try:
+        user.is_deleted = True  # Mark the user as deleted
+        db.session.commit()
+        flash(f"User '{user.first_name} {user.last_name}' marked as deleted successfully.", 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting user: {str(e)}", 'danger')
 
-    flash(f"User '{user.first_name} {user.last_name}' deleted successfully.", 'success')
     return redirect(url_for('list_users'))
 
 
