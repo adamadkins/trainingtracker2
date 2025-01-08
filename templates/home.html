@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Welcome</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body text-center">
+            <h1 class="mb-4">Welcome, {{ current_user.first_name }}!</h1>
+            <p class="mb-0">Role: <strong>{{ current_user.role.capitalize() }}</strong></p>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h2 class="text-center">Navigation</h2>
+        <div class="d-flex justify-content-center">
+            <div class="list-group w-50">
+                {% if current_user.role == 'admin' %}
+                    <a href="/dashboard" class="list-group-item list-group-item-action text-center">Admin Dashboard</a>
+                    <a href="/team-members" class="list-group-item list-group-item-action text-center">Manage Team Members</a>
+                    <a href="/admin/positions" class="list-group-item list-group-item-action text-center">Manage Positions</a>
+                    <a href="/sessions" class="list-group-item list-group-item-action text-center">View Training Sessions</a>
+                    <a href="/admin/add-user" class="list-group-item list-group-item-action text-center">Add New User</a>
+                {% elif current_user.role == 'trainer' %}
+                    <a href="/trainer/log-session" class="list-group-item list-group-item-action text-center">Log Training Session</a>
+                    <a href="/sessions" class="list-group-item list-group-item-action text-center">View Training Sessions</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

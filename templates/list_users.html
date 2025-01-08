@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-2 rounded shadow-sm">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Manage Users</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="p-4 rounded shadow-sm" style="background-color: #f0f4fc;">
+        <h1 class="text-center mb-4" style="color: #004a9f;">Manage Users</h1>
+
+        <!-- Responsive Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th scope="col" style="color: #004a9f;">First Name</th>
+                        <th scope="col" style="color: #004a9f;">Last Name</th>
+                        <th scope="col" style="color: #004a9f;">Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr class="clickable-row" style="cursor: pointer;" onclick="window.location.href='/admin/user/{{ user.id }}';">
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        <td>{{ user.role.capitalize() }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <a href="/admin/invite-user" class="btn btn-primary me-2" style="background-color: #004a9f; border: none;">Send User Invite</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

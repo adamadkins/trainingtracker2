@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light p-2 rounded shadow-sm">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Trainer Dashboard</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Notification Bell -->
+    <div class="d-flex justify-content-end mb-3">
+        <div class="notification-bell position-relative">
+            <button id="notification-bell" class="btn btn-link text-dark position-relative">
+                <i class="fas fa-bell fa-lg"></i>
+                <!-- Badge for unread notifications -->
+                <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                0
+            </span>
+            </button>
+            <!-- Dropdown for notifications -->
+            <div id="notification-dropdown" class="dropdown-menu dropdown-menu-end shadow-sm">
+                <div id="notification-list">
+                    <p class="text-muted text-center mb-0">No new notifications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome Section -->
+<div class="p-4 rounded shadow-sm" style="background-color: #f0f4fc;">
+    <h1 class="text-center mb-4" style="color: #004a9f;">Trainer Dashboard</h1>
+    <p class="text-center text-muted">Welcome, <strong>{{ current_user.first_name }}</strong>!</p>
+</div>
+
+<!-- Overview Section -->
+<div class="p-4 rounded shadow-sm mt-4" style="background-color: #e6effc;">
+    <h2 class="text-center" style="color: #004a9f;">Overview</h2>
+    <div class="row g-4 mt-3">
+        <div class="col-lg-12">
+            <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #004a9f;">Training Sessions Logged</h5>
+                    <p class="card-text display-6 text-dark">{{ sessions_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Team Member Training -->
+<div class="p-4 rounded shadow-sm mt-4" style="background-color: #e6effc;">
+    <h2 class="text-center" style="color: #004a9f;">Log Team Member Training</h2>
+
+    <!-- Centered and Shorter Search Bar -->
+    <form method="GET" action="/trainer-dashboard" class="mb-4 d-flex justify-content-center">
+        <div class="input-group" style="max-width: 500px; width: 100%;">
+            <input type="text" name="query" class="form-control" placeholder="Search team members" value="{{ query or '' }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+
+    <div class="row mt-3">
+        {% if team_members %}
+        <ul class="list-group list-group-flush">
+            {% for member in team_members %}
+            <li class="list-group-item d-flex align-items-center justify-content-between">
+                <div>
+                    <strong>{{ member.name }}</strong>
+                </div>
+                <form method="POST" action="/log-session/{{ member.id }}" class="w-100 ms-3">
+                    <div class="row g-2">
+                        <div class="col-md-8">
+                            <select class="form-select" name="position_id" required>
+                                <option value="" disabled selected>Select Position</option>
+                                {% for position in positions %}
+                                <option value="{{ position.id }}">{{ position.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f; border: none;">Log Training</button>
+                        </div>
+                    </div>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-center text-muted">No team members available to log training.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Actions Section -->
+<div class="p-4 rounded shadow-sm mt-4" style="background-color: #e6effc;">
+    <h2 class="text-center" style="color: #004a9f;">Actions</h2>
+    <div class="row g-4 mt-3">
+        <div class="col-lg-4 col-md-6">
+            <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #004a9f;">View All Team Members</h5>
+                    <p class="card-text text-muted">Browse the team members available for training.</p>
+                    <a href="/team-members" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">View Team Members</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #004a9f;">View All Training Sessions</h5>
+                    <p class="card-text text-muted">View all training sessions you have logged.</p>
+                    <a href="/sessions" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">View Sessions</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="card text-center border-0 shadow-sm" style="background-color: #ffffff;">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #004a9f;">View Calendar</h5>
+                    <p class="card-text text-muted">Check your assigned training sessions on the calendar.</p>
+                    <a href="/trainer/calendar" class="btn btn-primary btn-sm w-100" style="background-color: #004a9f;">Open Calendar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const bell = document.getElementById('notification-bell');
+    const badge = document.getElementById('notification-badge');
+    const dropdown = document.getElementById('notification-dropdown');
+
+    // Fetch notifications
+    async function fetchNotifications() {
+        try {
+            const response = await fetch('/api/notifications');
+            const notifications = await response.json();
+
+            if (notifications.length > 0) {
+                badge.textContent = notifications.length;
+                badge.classList.remove('d-none');
+
+                const list = document.getElementById('notification-list');
+                list.innerHTML = notifications
+                    .map(n => `
+                        <div class="dropdown-item notification-item">
+                            <p class="mb-1">${n.message}</p>
+                            <small class="text-muted">${new Date(n.created_at).toLocaleString()}</small>
+                        </div>
+                        <hr class="my-1">
+                    `)
+                    .join('');
+            } else {
+                badge.classList.add('d-none');
+                document.getElementById('notification-list').innerHTML = `<p class="text-muted text-center mb-0">No new notifications</p>`;
+            }
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    }
+
+    // Mark notifications as read
+    async function markNotificationsAsRead() {
+        try {
+            const response = await fetch('/api/notifications/mark-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                badge.classList.add('d-none'); // Hide the badge
+                console.log('Notifications marked as read'); // Optional for debugging
+            } else {
+                console.error('Failed to mark notifications as read');
+            }
+        } catch (error) {
+            console.error('Error marking notifications as read:', error);
+        }
+    }
+
+    // Toggle dropdown visibility and mark notifications as read
+    bell.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent click from bubbling
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+            markNotificationsAsRead();
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+        dropdown.classList.remove('show');
+    });
+
+    // Fetch notifications on page load
+    fetchNotifications();
+});
+</script>
+
+<style>
+    /* Notifications Bell */
+.notification-bell {
+    position: relative;
+}
+
+#notification-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 1050;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    width: 90%; /* Responsive width */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+#notification-dropdown.show {
+    display: block; /* Show dropdown when the class is added */
+}
+
+.notification-item {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    font-size: 14px;
+    padding: 10px;
+}
+
+.notification-item p {
+    margin: 0;
+}
+
+.notification-item small {
+    display: block;
+    font-size: 12px;
+    color: #888;
+}
+
+@media (max-width: 768px) {
+    #notification-dropdown {
+        width: 90%; /* Ensures dropdown fits mobile screens */
+        max-width: unset;
+    }
+
+    .notification-item {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+</style>
+{% endblock %}
